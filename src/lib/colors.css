@@ -1,0 +1,16 @@
+:root {
+    --White: #FFFFFF;
+    --Black: #000000;
+
+    --Primary-Color: #47FFFF;
+    --Background-Color: #222933;
+    --Disabled-Color: rgba(255,255,255,0.15);
+    --Text-Primary: #FFFFFF;
+
+    --Mana-W: #FFFCD5;
+    --Mana-U: #91CEFF;
+    --Mana-B: #C4C4C4;
+    --Mana-R: #FC9A85;
+    --Mana-G: #AFD59C;
+    --Mana-C: #C4C4C4;
+}
