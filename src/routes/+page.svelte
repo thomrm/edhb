@@ -272,7 +272,7 @@
     @keyframes -global-animate-shape {
         0% { opacity: 0.15; }
         25% { opacity: 1; }
-        50% { opacity: 0.15 }
+        50% { opacity: 0.15; }
     }
 
     .loading {
@@ -581,7 +581,7 @@
             top: 4px;
             left: 4px;
 
-            background-color: var(--Black);
+            background-color: var(--Background-Overlay-Full);
 
             transition: all 200ms;
         }

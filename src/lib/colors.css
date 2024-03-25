@@ -4,8 +4,9 @@
 
     --Primary-Color: #47FFFF;
     --Background-Color: #1a1a27;
-    --Background-Overlay-Dark: rgba(10,5,15,0.9);
-    --Background-Overlay-Light: rgba(10,5,15,0.5);
+    --Background-Overlay-Full: rgb(5,5,15);
+    --Background-Overlay-Dark: rgba(5,5,15,0.9);
+    --Background-Overlay-Light: rgba(5,5,15,0.5);
     --Background-Object: rgba(230,230,255,0.15);
     --Border-Color: rgba(230,230,255,0.1);
     --Text-Primary: #FFFFFF;

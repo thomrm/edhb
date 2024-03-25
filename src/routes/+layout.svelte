@@ -18,6 +18,9 @@
 
 <style>
     :root {
+        overflow-y: scroll;
+        scrollbar-color: var(--Background-Object) var(--Background-Color);
+
         & body {
             background: var(--Background-Color);
             color: var(--Text-Primary);
