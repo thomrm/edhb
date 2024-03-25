@@ -293,7 +293,7 @@
     }
 
     .filters-contain {
-        padding: 30px 0;
+        padding: 20px 0;
         display: flex;
         justify-content: center;
     }
@@ -326,8 +326,8 @@
     .filter {
         display: flex;
         align-items: center;
-        background: rgba(0,0,0,0.85);
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
+        background: var(--Background-Overlay-Dark);
+        box-shadow: 0 0 0 1px var(--Border-Color);
         padding: 8px;
         height: 32px;
         border-radius: 999px;
@@ -345,7 +345,7 @@
         width: 6px;
         height: 6px;
         transform: rotate(45deg);
-        background: var(--Disabled-Color);
+        background: var(--Background-Object);
         margin: 10px;
     }
 
@@ -372,7 +372,7 @@
             & svg {
                 width: 100%;
                 height: 100%;
-                color: var(--Disabled-Color);
+                color: var(--Background-Object);
 
                 transition: color 200ms;
             }
@@ -412,12 +412,13 @@
 
     .card {
         display: flex;
+        padding: 5px;
+        gap: 5px;
         flex-direction: column;
         overflow: hidden;
         border-radius: 8% / 6%;
-        background: rgba(0,0,0,0.25);
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
-        padding: 5px;
+        background: var(--Background-Overlay-Light);
+        box-shadow: 0 0 0 1px var(--Border-Color);
         cursor: pointer;
         outline: 2px solid transparent;
 
@@ -426,6 +427,7 @@
         & img {
             width: 100%;
             border-radius: 6.5% / 5%;
+            box-sizing: border-box;
         }
 
         &:hover {
@@ -435,7 +437,7 @@
 
     .card__info {
         font-size: 0.6rem;
-        padding: 5px 15px 0;
+        padding: 0 15px;
         display: flex;
         justify-content: space-between;
     }
@@ -444,7 +446,7 @@
         width: 4px;
         height: 4px;
         transform: rotate(45deg);
-        background: var(--Disabled-Color);
+        background: var(--Background-Object);
     }
 
     .price {
@@ -454,7 +456,7 @@
     }
 
     .foil {
-        background: linear-gradient(90deg, rgba(191,147,255,1) 0%, rgba(115,255,222,1) 100%);
+        background: linear-gradient(90deg, rgba(191,147,255,1) 0%, rgba(115,239,255,1) 100%);
         background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -516,6 +518,7 @@
         border-radius: 999px;
         padding: 2px;
         border: 2px solid transparent;
+        background-color: var(--Border-Color);
 
         transition: border-color 200ms;
 
@@ -564,7 +567,7 @@
             height: 24px;
             border-radius: 999px;
 
-            background: var(--Disabled-Color);
+            background: var(--Background-Object);
 
             transition: background-color 200ms, color 200ms;
         }
@@ -578,7 +581,7 @@
             top: 4px;
             left: 4px;
 
-            background-color: #000;
+            background-color: var(--Black);
 
             transition: all 200ms;
         }
@@ -594,6 +597,7 @@
         background-image: url('Select.svg');
         background-repeat: no-repeat;
         background-position: right 12px center;
+        background-color: var(--Border-Color);
         color: var(--Text-Primary);
         font: inherit;
         font-size: 0.8rem;
@@ -641,6 +645,10 @@
         padding: 2px 28px;
         width: 120px;
         cursor: pointer;
+
+        &::placeholder {
+            color: var(--Text-Secondary);
+        }
 
         &:focus-visible {
             outline: none;

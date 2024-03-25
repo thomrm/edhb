@@ -3,9 +3,13 @@
     --Black: #000000;
 
     --Primary-Color: #47FFFF;
-    --Background-Color: #222933;
-    --Disabled-Color: rgba(255,255,255,0.15);
+    --Background-Color: #1a1a27;
+    --Background-Overlay-Dark: rgba(10,5,15,0.9);
+    --Background-Overlay-Light: rgba(10,5,15,0.5);
+    --Background-Object: rgba(230,230,255,0.15);
+    --Border-Color: rgba(230,230,255,0.1);
     --Text-Primary: #FFFFFF;
+    --Text-Secondary: rgba(230,230,255,0.5);
 
     --Mana-W: #FFFCD5;
     --Mana-U: #91CEFF;
