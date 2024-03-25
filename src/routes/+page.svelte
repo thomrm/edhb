@@ -26,13 +26,18 @@
     let searchTerm;
     
     onMount(async () => {
-        const response = await fetch('/data/oracle.json');
+        const response = await fetch('/data/cards.json');
         const data = await response.json();
 
         cards = data
-            .filter(x => x.type_line ? x.type_line.includes("Legendary") && x.type_line.includes("Creature") && x.games.includes("paper") : "")
-            .filter(x => x.type_line ? !x.type_line.includes("Token") : "")
-            .filter(x => x.type_line ? !x.type_line.includes("Land") : "")
+            .filter(x => x.type_line && x.oracle_text ? x.type_line.includes("Legendary") && x.type_line.includes("Creature") || x.type_line.includes("Planeswalker") && x.oracle_text.includes("can be your commander") || x.name.includes("Grist, the Hunger Tide") : "")
+            .filter(x => x.type_line ? !x.type_line.includes("Token") : true)
+            .filter(x => x.type_line ? !x.type_line.includes("Land") : true)
+            .filter(x => x.games.includes("paper"))
+            .filter(x => x.lang.includes("en"))
+            .filter(x => x.promo_types ? !x.promo_types.includes("stamped") && !x.promo_types.includes("prerelease") : true)
+            .filter(x => !x.oversized)
+            .filter(x => !x.set.includes("plst"))
             .filter(x => !x.border_color.includes("silver"))
             .filter(x => !x.legalities.commander.includes("not_legal"));
 
@@ -74,10 +79,10 @@
                 filteredCards = filteredCards.sort((a, b) => (sortAsc ? 1 : -1) * a.name.localeCompare(b.name));
             }
             if (sortType === 'cmc') {
-                filteredCards = filteredCards.sort((a, b) => (sortAsc ? a.cmc - b.cmc : b.cmc - a.cmc));
+                filteredCards = filteredCards.sort((a, b) => (sortAsc ? a.cmc - b.cmc : b.cmc - a.cmc) || (a.name.localeCompare(b.name)) || (new Date(b.released_at) - new Date(a.released_at)));
             }
             if (sortType === 'release') {
-                filteredCards = filteredCards.sort((a, b) => (sortAsc ? new Date(a.released_at) - new Date(b.released_at) : new Date(b.released_at) - new Date(a.released_at)));
+                filteredCards = filteredCards.sort((a, b) => (sortAsc ? new Date(a.released_at) - new Date(b.released_at) : new Date(b.released_at) - new Date(a.released_at)) || (a.name.localeCompare(b.name)));
             }
 
             searchCards();
@@ -212,7 +217,23 @@
                         {/if}
                         <div class="card__info">
                             <div class="price">
-                                <span>{#if prices.usd}${prices.usd}{:else}--{/if}</span> <div class="card__divider"></div> <span class="foil">{#if prices.usd_foil}${prices.usd_foil}{:else}--{/if}</span>
+                                <span>
+                                    {#if prices.usd}
+                                        ${prices.usd}
+                                    {:else}
+                                        --
+                                    {/if}
+                                </span>
+                                <div class="card__divider"></div>
+                                <span class="foil">
+                                    {#if prices.usd_foil}
+                                        ${prices.usd_foil}
+                                    {:else if prices.usd_etched}
+                                        ${prices.usd_etched} &#10023;
+                                    {:else}
+                                        --
+                                    {/if}
+                                </span>
                             </div>
                             <span>{#if released_at}{released_at}{:else}--{/if}</span>
                         </div>
