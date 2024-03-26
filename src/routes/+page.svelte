@@ -4,6 +4,7 @@
 	import { expoOut } from 'svelte/easing';
 
     let cards;
+    let cardsU;
     let filteredCards;
     let totalCards;
 
@@ -23,22 +24,24 @@
     let sortType = "release";
     let sortAsc = false;
 
+    let latestPrint = true;
+
     let searchTerm;
     
     onMount(async () => {
         const response = await fetch('/data/cards.json');
         const data = await response.json();
 
-        cards = data
+        cardsU = data
             .filter(x => x.type_line && x.oracle_text ? x.type_line.includes("Legendary") && x.type_line.includes("Creature") || x.type_line.includes("Planeswalker") && x.oracle_text.includes("can be your commander") || x.name.includes("Grist, the Hunger Tide") : "")
             .filter(x => x.type_line ? !x.type_line.includes("Token") : true)
             .filter(x => x.type_line ? !x.type_line.includes("Land") : true)
             .filter(x => x.games.includes("paper"))
             .filter(x => x.lang.includes("en"))
-            .filter(x => x.promo_types ? !x.promo_types.includes("stamped") && !x.promo_types.includes("prerelease") : true)
+            .filter(x => x.promo_types ? !x.promo_types.includes("stamped") && !x.promo_types.includes("prerelease") && !x.promo_types.includes("serialized") : true)
             .filter(x => !x.oversized)
             .filter(x => !x.set.includes("plst"))
-            .filter(x => !x.border_color.includes("silver"))
+            .filter(x => !x.border_color.includes("silver") && !x.border_color.includes("gold"))
             .filter(x => !x.legalities.commander.includes("not_legal"));
 
         filterCards();
@@ -51,22 +54,25 @@
         totalCards = reset ? null : totalCards;
 
         setTimeout(function() {
+            cards = cardsU.sort((a, b) => (latestPrint ? new Date(b.released_at) - new Date(a.released_at) : new Date(a.released_at) - new Date(b.released_at)));
+            cards = Object.entries(Object.groupBy(cards, ({ name }) => name));
+
             filteredCards = cards;
 
             if (exact) {
-                filteredCards = colorW ? filteredCards.filter(x => x.color_identity.includes("W")) : filteredCards.filter(x => !x.color_identity.includes("W"));
-                filteredCards = colorU ? filteredCards.filter(x => x.color_identity.includes("U")) : filteredCards.filter(x => !x.color_identity.includes("U"));
-                filteredCards = colorB ? filteredCards.filter(x => x.color_identity.includes("B")) : filteredCards.filter(x => !x.color_identity.includes("B"));
-                filteredCards = colorR ? filteredCards.filter(x => x.color_identity.includes("R")) : filteredCards.filter(x => !x.color_identity.includes("R"));
-                filteredCards = colorG ? filteredCards.filter(x => x.color_identity.includes("G")) : filteredCards.filter(x => !x.color_identity.includes("G"));
-                filteredCards = colorC ? filteredCards.filter(x => x.color_identity.length == 0) : filteredCards.filter(x => !x.color_identity.length == 0);
+                filteredCards = colorW ? filteredCards.filter(x => x[1][0].color_identity.includes("W")) : filteredCards.filter(x => !x[1][0].color_identity.includes("W"));
+                filteredCards = colorU ? filteredCards.filter(x => x[1][0].color_identity.includes("U")) : filteredCards.filter(x => !x[1][0].color_identity.includes("U"));
+                filteredCards = colorB ? filteredCards.filter(x => x[1][0].color_identity.includes("B")) : filteredCards.filter(x => !x[1][0].color_identity.includes("B"));
+                filteredCards = colorR ? filteredCards.filter(x => x[1][0].color_identity.includes("R")) : filteredCards.filter(x => !x[1][0].color_identity.includes("R"));
+                filteredCards = colorG ? filteredCards.filter(x => x[1][0].color_identity.includes("G")) : filteredCards.filter(x => !x[1][0].color_identity.includes("G"));
+                filteredCards = colorC ? filteredCards.filter(x => x[1][0].color_identity.length == 0) : filteredCards.filter(x => !x[1][0].color_identity.length == 0);
             } else {
-                filteredCards = !colorW ? filteredCards.filter(x => !x.color_identity.includes("W")) : filteredCards;
-                filteredCards = !colorU ? filteredCards.filter(x => !x.color_identity.includes("U")) : filteredCards;
-                filteredCards = !colorB ? filteredCards.filter(x => !x.color_identity.includes("B")) : filteredCards;
-                filteredCards = !colorR ? filteredCards.filter(x => !x.color_identity.includes("R")) : filteredCards;
-                filteredCards = !colorG ? filteredCards.filter(x => !x.color_identity.includes("G")) : filteredCards;
-                filteredCards = !colorC ? filteredCards.filter(x => !x.color_identity.length == 0) : filteredCards;
+                filteredCards = !colorW ? filteredCards.filter(x => !x[1][0].color_identity.includes("W")) : filteredCards;
+                filteredCards = !colorU ? filteredCards.filter(x => !x[1][0].color_identity.includes("U")) : filteredCards;
+                filteredCards = !colorB ? filteredCards.filter(x => !x[1][0].color_identity.includes("B")) : filteredCards;
+                filteredCards = !colorR ? filteredCards.filter(x => !x[1][0].color_identity.includes("R")) : filteredCards;
+                filteredCards = !colorG ? filteredCards.filter(x => !x[1][0].color_identity.includes("G")) : filteredCards;
+                filteredCards = !colorC ? filteredCards.filter(x => !x[1][0].color_identity.length == 0) : filteredCards;
             }
 
             sortCards();
@@ -76,13 +82,13 @@
     function sortCards() {
         setTimeout(function() {
             if (sortType === 'name') {
-                filteredCards = filteredCards.sort((a, b) => (sortAsc ? 1 : -1) * a.name.localeCompare(b.name));
+                filteredCards = filteredCards.sort((a, b) => (sortAsc ? 1 : -1) * a[1][0].name.localeCompare(b[1][0].name));
             }
             if (sortType === 'cmc') {
-                filteredCards = filteredCards.sort((a, b) => (sortAsc ? a.cmc - b.cmc : b.cmc - a.cmc) || (a.name.localeCompare(b.name)) || (new Date(b.released_at) - new Date(a.released_at)));
+                filteredCards = filteredCards.sort((a, b) => (sortAsc ? a[1][0].cmc - b[1][0].cmc : b[1][0].cmc - a[1][0].cmc) || (a[1][0].name.localeCompare(b[1][0].name)) || (new Date(b[1][0].released_at) - new Date(a[1][0].released_at)));
             }
             if (sortType === 'release') {
-                filteredCards = filteredCards.sort((a, b) => (sortAsc ? new Date(a.released_at) - new Date(b.released_at) : new Date(b.released_at) - new Date(a.released_at)) || (a.name.localeCompare(b.name)));
+                filteredCards = filteredCards.sort((a, b) => (sortAsc ? new Date(a[1][0].released_at) - new Date(b[1][0].released_at) : new Date(b[1][0].released_at) - new Date(a[1][0].released_at)) || (a[1][0].name.localeCompare(b[1][0].name)));
             }
 
             searchCards();
@@ -92,7 +98,7 @@
     function searchCards() {
         setTimeout(function() {
             filteredCards = searchTerm ? filteredCards.filter(function(x) {
-                return x.oracle_text ? x.oracle_text.toLowerCase().includes(searchTerm.toLowerCase()) || x.type_line.toLowerCase().includes(searchTerm.toLowerCase()) || x.name.toLowerCase().includes(searchTerm.toLowerCase()) : null;
+                return x[1][0].oracle_text ? x[1][0].oracle_text.toLowerCase().includes(searchTerm.toLowerCase()) || x[1][0].type_line.toLowerCase().includes(searchTerm.toLowerCase()) || x[1][0].name.toLowerCase().includes(searchTerm.toLowerCase()) : null;
             }) : filteredCards;
 
             pageTotal = Math.ceil(filteredCards.length / pageSize);
@@ -206,36 +212,36 @@
             <div class="grid-status">No Results</div>
         {:else}
             <div class="card-grid">
-                {#each filteredCards.slice(page * pageSize, page * pageSize + pageSize) as {card_faces, image_uris, name, prices, released_at}, i}
+                {#each filteredCards.slice(page * pageSize, page * pageSize + pageSize) as card, i}
                     <div class="card" in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }}>
-                        {#if image_uris}
-                            <img srcset="{image_uris.normal}, {image_uris.large} 2x" src="{image_uris.normal}" alt="{name}" />
+                        {#if card[1][0].image_uris}
+                            <img srcset="{card[1][0].image_uris.normal}, {card[1][0].image_uris.large} 2x" src="{card[1][0].image_uris.normal}" alt="{card[1][0].name}" />
                         {:else}
-                            {#if card_faces}
-                                <img srcset="{card_faces[0].image_uris.normal}, {card_faces[0].image_uris.large} 2x" src="{card_faces[0].image_uris.normal}" alt="{name}" />
+                            {#if card[1][0].card_faces}
+                                <img srcset="{card[1][0].card_faces[0].image_uris.normal}, {card[1][0].card_faces[0].image_uris.large} 2x" src="{card[1][0].card_faces[0].image_uris.normal}" alt="{card[1][0].name}" />
                             {/if}
                         {/if}
                         <div class="card__info">
                             <div class="price">
                                 <span>
-                                    {#if prices.usd}
-                                        ${prices.usd}
+                                    {#if card[1][0].prices.usd}
+                                        ${card[1][0].prices.usd}
                                     {:else}
                                         --
                                     {/if}
                                 </span>
                                 <div class="card__divider"></div>
                                 <span class="foil">
-                                    {#if prices.usd_foil}
-                                        ${prices.usd_foil}
-                                    {:else if prices.usd_etched}
-                                        ${prices.usd_etched} &#10023;
+                                    {#if card[1][0].prices.usd_foil}
+                                        ${card[1][0].prices.usd_foil}
+                                    {:else if card[1][0].prices.usd_etched}
+                                        ${card[1][0].prices.usd_etched} &#10023;
                                     {:else}
                                         --
                                     {/if}
                                 </span>
                             </div>
-                            <span>{#if released_at}{released_at}{:else}--{/if}</span>
+                            <span>{#if card[1][0].released_at}{card[1][0].released_at}{:else}--{/if}</span>
                         </div>
                     </div>
                 {/each}
