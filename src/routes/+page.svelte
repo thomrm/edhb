@@ -181,6 +181,19 @@
 
         <div class="filters-right">
             <fieldset class="filter">
+                <input class="toggle-box" type="checkbox" id="printing" bind:checked={latestPrint} on:click={filterCards} />
+                <label class="toggle" for="printing">
+                    <div class="filter__label">
+                        {#if latestPrint}
+                            Latest Print
+                        {:else}
+                            First Print
+                        {/if}
+                    </div>
+                </label>
+
+                <div class="filter__divider"></div>
+
                 <select class="select-box" name="sort-type" id="sort-type" bind:value={sortType} on:change={filterCards}>
                     <option value="name">Sort by Name</option>
                     <option value="cmc">Sort by CMC</option>
