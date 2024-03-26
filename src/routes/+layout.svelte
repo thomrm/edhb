@@ -20,12 +20,14 @@
     :root {
         overflow-y: scroll;
         scrollbar-color: var(--Background-Object) var(--Background-Color);
+        font-size: 10px;
 
         & body {
             background: var(--Background-Color);
             color: var(--Text-Primary);
             font-family: 'Nunito Sans', serif;
             font-weight: 600;
+            font-size: 1.4rem
         }
 
         & a {
@@ -40,5 +42,10 @@
         min-height: 100vh;
         padding: 0 50px;
         margin: 0 auto;
+    }
+
+    @media screen and (max-width: 720px) {
+        :root { font-size: 9px; }
+        .content-contain { padding: 0 10px; }
     }
 </style>
