@@ -679,7 +679,7 @@
         }
 
         &:placeholder-shown {
-            width: 42px;
+            width: 46px;
         }
 
         &:focus {
