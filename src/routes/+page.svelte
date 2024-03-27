@@ -59,8 +59,6 @@
             .filter(x => !x.set.includes("plst"))
             .filter(x => !x.border_color.includes("silver") && !x.border_color.includes("gold"))
 
-        cardsU = cardsRaw;
-
         filterCards();
     });
 
@@ -138,6 +136,18 @@
     const nextPage = () => { page++; filterCards(false); }
     const previousPage = () => { page--; filterCards(false); }
     const lastPage = () => { page = pageTotal - 1; filterCards(false); }
+
+    const preload = async (src) => {
+        const resp = await fetch(src);
+        const blob = await resp.blob();
+
+        return new Promise(function (resolve) {
+            let reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (error) => reject('Error: ', error);
+        });
+    };
 </script>
 
 <div class="filters-contain filters-contain--top">
@@ -248,13 +258,23 @@
             <div class="card-grid">
                 {#each filteredCards.slice(page * pageSize, page * pageSize + pageSize) as card, i}
                     <div class="card" in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }}>
-                        {#if card[1][0].image_uris}
-                            <img srcset="{card[1][0].image_uris.normal}, {card[1][0].image_uris.large} 2x" src="{card[1][0].image_uris.normal}" alt="{card[1][0].name}" />
-                        {:else}
-                            {#if card[1][0].card_faces}
-                                <img srcset="{card[1][0].card_faces[0].image_uris.normal}, {card[1][0].card_faces[0].image_uris.large} 2x" src="{card[1][0].card_faces[0].image_uris.normal}" alt="{card[1][0].name}" />
+                        <div class="card__image">
+                            {#if card[1][0].image_uris}
+                                {#await preload(card[1][0].image_uris.normal)}
+                                   <div class="card-placeholder"></div>
+                                {:then}
+                                    <img srcset="{card[1][0].image_uris.normal}, {card[1][0].image_uris.large} 2x" src="{card[1][0].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
+                                {/await}
+                            {:else}
+                                {#if card[1][0].card_faces}
+                                    {#await preload(card[1][0].card_faces[0].image_uris.normal)}
+                                        <div class="card-placeholder"></div>
+                                    {:then}
+                                        <img srcset="{card[1][0].card_faces[0].image_uris.normal}, {card[1][0].card_faces[0].image_uris.large} 2x" src="{card[1][0].card_faces[0].image_uris.normal}" alt="{card[1][0].name}" />
+                                    {/await}
+                                {/if}
                             {/if}
-                        {/if}
+                        </div>
                         <div class="card__info">
                             <div class="price">
                                 <span>
@@ -486,10 +506,19 @@
         outline: 2px solid transparent;
 
         transition: outline 200ms;
+    }
+
+    .card__image {
+        width: auto;
+        aspect-ratio: 5 / 7;
+        display: flex;
+        border-radius: 6.5% / 5%;
+        background: var(--Black);
+        overflow: hidden;
 
         & img {
-            border-radius: 6.5% / 5%;
-            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
         }
     }
 
