@@ -488,7 +488,6 @@
         transition: outline 200ms;
 
         & img {
-            width: 100%;
             border-radius: 6.5% / 5%;
             box-sizing: border-box;
         }
@@ -682,7 +681,7 @@
         text-overflow: ellipsis;
         color: inherit;
         font: inherit;
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         border-radius: 999px;
         height: 24px;
         padding: 2px 28px;
