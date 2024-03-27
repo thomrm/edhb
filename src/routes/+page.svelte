@@ -527,6 +527,9 @@
 
     .card__image {
         width: auto;
+        height: 0;
+        padding-top: 140%;
+        position: relative;
         display: flex;
         border-radius: 6.5% / 5%;
         background: var(--Black);
@@ -535,6 +538,8 @@
         & img {
             width: 100%;
             height: 100%;
+            position: absolute;
+            top: 0;
         }
     }
 
