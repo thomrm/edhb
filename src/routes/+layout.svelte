@@ -45,7 +45,6 @@
     }
 
     @media screen and (max-width: 720px) {
-        :root { font-size: 9px; }
         .content-contain { padding: 0 10px; }
     }
 </style>

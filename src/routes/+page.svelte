@@ -689,18 +689,8 @@
         width: 120px;
         cursor: pointer;
 
-        transition: width 200ms;
-
         &::placeholder {
             color: var(--Text-Secondary);
-        }
-
-        &:placeholder-shown {
-            width: 46px;
-        }
-
-        &:focus {
-            width: 120px;
         }
 
         &:focus-visible {
@@ -753,6 +743,10 @@
 
         .pagination-contain .filter {
             width: 100%;
+        }
+
+        .search {
+            font-size: 16px;
         }
     }
 </style>
