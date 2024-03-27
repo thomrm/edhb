@@ -27,6 +27,8 @@
     let latestPrint = true;
 
     let searchTerm;
+
+    const groupBy = (x,f)=>x.reduce((a,b,i)=>((a[f(b,i,x)]||=[]).push(b),a),{});
     
     onMount(async () => {
         const response = await fetch('/data/cards.json');
@@ -55,7 +57,7 @@
 
         setTimeout(function() {
             cards = cardsU.sort((a, b) => (latestPrint ? new Date(b.released_at) - new Date(a.released_at) : new Date(a.released_at) - new Date(b.released_at)));
-            cards = Object.entries(Object.groupBy(cards, ({ name }) => name));
+            cards = Object.entries(groupBy(cards, ({ name }) => name));
 
             filteredCards = cards;
 
