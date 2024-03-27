@@ -527,7 +527,6 @@
 
     .card__image {
         width: auto;
-        aspect-ratio: 5 / 7;
         display: flex;
         border-radius: 6.5% / 5%;
         background: var(--Black);
