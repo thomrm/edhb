@@ -624,7 +624,7 @@
         border: 2px solid transparent;
         border-radius: 999px;
         background: none;
-        background-image: url('Select.svg');
+        background-image: url("/Select.svg");
         background-repeat: no-repeat;
         background-position: right 12px center;
         background-color: var(--Border-Color);
@@ -658,7 +658,7 @@
 
     .search {
         background: none;
-        background-image: url('Search.svg');
+        background-image: url("/Search.svg");
         background-repeat: no-repeat;
         background-position: left 8px center;
         border: none;
