@@ -114,7 +114,6 @@
         setTimeout(function() {
             filteredCards = searchTerm ? filteredCards.filter(function(x) {
                 if (x[1][0].card_faces) {
-                    console.log('faced!');
                     return  x[1][0].card_faces[0].oracle_text ? x[1][0].card_faces[0].oracle_text.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             x[1][0].card_faces[0].type_line.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             x[1][0].card_faces[0].name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -269,20 +268,27 @@
         {:else}
             <div class="card-grid">
                 {#each filteredCards.slice(page * pageSize, page * pageSize + pageSize) as card, i}
-                    <div class="card" in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }}>
+                    <div class="card" class:card--dual={card[1][0].layout=="transform"} in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }}>
                         <div class="card__image">
                             {#if card[1][0].image_uris}
+                                <img class="card-placeholder" src="/Placeholder.svg" alt="Placeholder" />
                                 {#await preload(card[1][0].image_uris.normal)}
-                                    <img class="card-placeholder" src="/Placeholder.svg" alt="Placeholder" />
+                                    <!--Loading-->
                                 {:then}
                                     <img srcset="{card[1][0].image_uris.normal}, {card[1][0].image_uris.large} 2x" src="{card[1][0].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
                                 {/await}
                             {:else}
                                 {#if card[1][0].card_faces}
+                                    <img class="card-placeholder" src="/Placeholder.svg" alt="Placeholder" />
                                     {#await preload(card[1][0].card_faces[0].image_uris.normal)}
-                                        <img class="card-placeholder" src="/Placeholder.svg" alt="Placeholder" />
+                                        <!--Loading-->
                                     {:then}
-                                        <img srcset="{card[1][0].card_faces[0].image_uris.normal}, {card[1][0].card_faces[0].image_uris.large} 2x" src="{card[1][0].card_faces[0].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
+                                        <div class="face-front">
+                                            <img srcset="{card[1][0].card_faces[0].image_uris.normal}, {card[1][0].card_faces[0].image_uris.large} 2x" src="{card[1][0].card_faces[0].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
+                                        </div>
+                                        <div class="face-back">
+                                            <img srcset="{card[1][0].card_faces[1].image_uris.normal}, {card[1][0].card_faces[1].image_uris.large} 2x" src="{card[1][0].card_faces[1].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
+                                        </div>
                                     {/await}
                                 {/if}
                             {/if}
@@ -510,12 +516,12 @@
         padding: 5px;
         gap: 5px;
         flex-direction: column;
-        overflow: hidden;
         border-radius: 8% / 6%;
         background: var(--Background-Overlay-Light);
         box-shadow: 0 0 0 1px var(--Border-Color);
         cursor: pointer;
         outline: 2px solid transparent;
+        perspective: 2000px;
 
         transition: outline 200ms;
     }
@@ -532,15 +538,30 @@
         position: relative;
         display: flex;
         border-radius: 6.5% / 5%;
-        background: var(--Black);
-        overflow: hidden;
+
+        transition: transform 600ms;
+        transform-style: preserve-3d;
 
         & img {
             width: 100%;
             height: 100%;
+            border-radius: 6.5% / 5%;
             position: absolute;
             top: 0;
         }
+    }
+
+
+    .face-front, .face-back {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        backface-visibility: hidden;
+    }
+
+    .face-back {
+        transform: rotateY(180deg);
     }
 
     .card__info {
@@ -768,6 +789,10 @@
 
         .card:hover {
             outline: 2px solid var(--Primary-Color);
+        }
+
+        .card--dual:hover .card__image {
+            transform: rotateY(180deg);
         }
     }
 
