@@ -29,7 +29,7 @@
     let searchTerm;
     
     onMount(async () => {
-        const response = await fetch('/data/cards.json');
+        const response = await fetch('https://y4k4olojktpogxeg.public.blob.vercel-storage.com/cards.json');
         const data = await response.json();
 
         cardsU = data
