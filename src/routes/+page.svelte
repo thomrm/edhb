@@ -3,8 +3,9 @@
     import { fly, fade } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
 
-    let cards;
+    let cardsRaw = [];
     let cardsU;
+    let cards;
     let filteredCards;
     let totalCards;
 
@@ -29,22 +30,36 @@
     let searchTerm;
 
     const groupBy = (x,f)=>x.reduce((a,b,i)=>((a[f(b,i,x)]||=[]).push(b),a),{});
+
+    let filtersList = [
+        '%28%28type%3Acreature+type%3Alegendary%29+OR+%28oracle%3A"can+be+your+commander"+type%3Aplaneswalker%29+OR+%28Grist%2C+The+Hunger+Tide%29%29',
+        '%28game%3Apaper%29',
+        'unique%3Aprints'
+    ]
+
+    let filters = filtersList.join("+");
     
     onMount(async () => {
-        const response = await fetch('/data/cards.json');
+        const response = await fetch('https://api.scryfall.com/cards/search?q='+filters);
         const data = await response.json();
 
-        cardsU = data
-            .filter(x => x.type_line && x.oracle_text ? x.type_line.includes("Legendary") && x.type_line.includes("Creature") || x.type_line.includes("Planeswalker") && x.oracle_text.includes("can be your commander") || x.name.includes("Grist, the Hunger Tide") : "")
+        for (let i = 1; i <= Math.ceil(data.total_cards / 175); i++) {
+            const rawPage = await fetch('https://api.scryfall.com/cards/search?q='+filters+'&page='+i);
+            const rawPageData = await rawPage.json();
+
+            cardsRaw = cardsRaw.concat(rawPageData.data);
+        }
+
+        cardsU = cardsRaw
             .filter(x => x.type_line ? !x.type_line.includes("Token") : true)
             .filter(x => x.type_line ? !x.type_line.includes("Land") : true)
-            .filter(x => x.games.includes("paper"))
             .filter(x => x.lang.includes("en"))
             .filter(x => x.promo_types ? !x.promo_types.includes("stamped") && !x.promo_types.includes("prerelease") && !x.promo_types.includes("serialized") : true)
             .filter(x => !x.oversized)
             .filter(x => !x.set.includes("plst"))
             .filter(x => !x.border_color.includes("silver") && !x.border_color.includes("gold"))
-            .filter(x => !x.legalities.commander.includes("not_legal"));
+
+        cardsU = cardsRaw;
 
         filterCards();
     });
