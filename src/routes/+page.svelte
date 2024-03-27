@@ -273,14 +273,14 @@
                         <div class="card__image">
                             {#if card[1][0].image_uris}
                                 {#await preload(card[1][0].image_uris.normal)}
-                                   <div class="card-placeholder"></div>
+                                    <img class="card-placeholder" src="/Placeholder.svg" alt="Placeholder" />
                                 {:then}
                                     <img srcset="{card[1][0].image_uris.normal}, {card[1][0].image_uris.large} 2x" src="{card[1][0].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
                                 {/await}
                             {:else}
                                 {#if card[1][0].card_faces}
                                     {#await preload(card[1][0].card_faces[0].image_uris.normal)}
-                                        <div class="card-placeholder"></div>
+                                        <img class="card-placeholder" src="/Placeholder.svg" alt="Placeholder" />
                                     {:then}
                                         <img srcset="{card[1][0].card_faces[0].image_uris.normal}, {card[1][0].card_faces[0].image_uris.large} 2x" src="{card[1][0].card_faces[0].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
                                     {/await}
@@ -518,6 +518,11 @@
         outline: 2px solid transparent;
 
         transition: outline 200ms;
+    }
+
+    .card-placeholder {
+        width: 100%;
+        height: 100%;
     }
 
     .card__image {
