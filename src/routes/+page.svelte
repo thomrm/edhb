@@ -52,12 +52,12 @@
 
         cardsU = cardsRaw
             .filter(x => x.type_line ? !x.type_line.includes("Token") : true)
-            .filter(x => x.type_line ? !x.type_line.includes("Land") : true)
+            .filter(x => x.card_faces ? !x.card_faces[0].type_line.includes("Land") : true)
             .filter(x => x.lang.includes("en"))
             .filter(x => x.promo_types ? !x.promo_types.includes("stamped") && !x.promo_types.includes("prerelease") && !x.promo_types.includes("serialized") : true)
             .filter(x => !x.oversized)
             .filter(x => !x.set.includes("plst"))
-            .filter(x => !x.border_color.includes("silver") && !x.border_color.includes("gold"))
+            .filter(x => !x.border_color.includes("silver") && !x.border_color.includes("gold"));
 
         filterCards();
     });
@@ -113,7 +113,19 @@
     function searchCards() {
         setTimeout(function() {
             filteredCards = searchTerm ? filteredCards.filter(function(x) {
-                return x[1][0].oracle_text ? x[1][0].oracle_text.toLowerCase().includes(searchTerm.toLowerCase()) || x[1][0].type_line.toLowerCase().includes(searchTerm.toLowerCase()) || x[1][0].name.toLowerCase().includes(searchTerm.toLowerCase()) : null;
+                if (x[1][0].card_faces) {
+                    console.log('faced!');
+                    return  x[1][0].card_faces[0].oracle_text ? x[1][0].card_faces[0].oracle_text.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            x[1][0].card_faces[0].type_line.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            x[1][0].card_faces[0].name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            x[1][0].card_faces[1].oracle_text.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            x[1][0].card_faces[1].type_line.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            x[1][0].card_faces[1].name.toLowerCase().includes(searchTerm.toLowerCase()) : null;
+                } else {
+                    return  x[1][0].oracle_text ? x[1][0].oracle_text.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            x[1][0].type_line.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            x[1][0].name.toLowerCase().includes(searchTerm.toLowerCase()) : null;
+                }
             }) : filteredCards;
 
             pageTotal = Math.ceil(filteredCards.length / pageSize);
@@ -270,7 +282,7 @@
                                     {#await preload(card[1][0].card_faces[0].image_uris.normal)}
                                         <div class="card-placeholder"></div>
                                     {:then}
-                                        <img srcset="{card[1][0].card_faces[0].image_uris.normal}, {card[1][0].card_faces[0].image_uris.large} 2x" src="{card[1][0].card_faces[0].image_uris.normal}" alt="{card[1][0].name}" />
+                                        <img srcset="{card[1][0].card_faces[0].image_uris.normal}, {card[1][0].card_faces[0].image_uris.large} 2x" src="{card[1][0].card_faces[0].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
                                     {/await}
                                 {/if}
                             {/if}
