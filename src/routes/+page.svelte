@@ -2,6 +2,14 @@
     import { onMount } from "svelte";
     import { fly, fade } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
+    import { page } from '$app/stores';
+    import { goto } from "$app/navigation";
+
+    // URL params
+    const queryM = $page.url.searchParams.get('m') ? $page.url.searchParams.get('m') : "wubrg";
+    const queryS = $page.url.searchParams.get('s') ? $page.url.searchParams.get('s') : false;
+    let mString;
+    let sVal;
 
     // Import SVGs - for better formatting
     import svgColorW from "../lib/svg/white.svelte";
@@ -20,20 +28,20 @@
     let filteredCards;
     let filters = {
         color: {
-            white: true,
-            blue: true,
-            black: true,
-            red: true,
-            green: true,
-            colorless: false,
-            exact: false
+            white: queryM && queryM.includes("w") ? true : false,
+            blue: queryM && queryM.includes("u") ? true : false,
+            black: queryM && queryM.includes("b") ? true : false,
+            red: queryM && queryM.includes("r") ? true : false,
+            green: queryM && queryM.includes("g") ? true : false,
+            colorless: queryM && queryM.includes("c") ? true : false,
+            strict: queryS && queryS.includes(true) ? true : false
         },
         latestPrint: true,
         sortType: "release",
         sortAsc: false,
         pageSize: 30
     }
-    let page = 0;
+    let currentPage = 0;
     let searchTerm;
 
     // Total numbers for display
@@ -77,9 +85,21 @@
         filterCards();
     });
 
+    $: updateURLParams = async () => {
+        mString = 
+            (filters.color.white ? 'w' : '')+
+            (filters.color.blue ? 'u' : '')+
+            (filters.color.black ? 'b' : '')+
+            (filters.color.red ? 'r' : '')+
+            (filters.color.green ? 'g' : '')+
+            (filters.color.colorless ? 'c' : '');
+        sVal = filters.color.strict ? true : false;
+        goto('?m='+mString+'&s='+sVal);
+    }
+
     $: filterCards = async (reset) => {
         // Force a page reset - used for clearing search term
-        page = reset ? 0 : page;
+        currentPage = reset ? 0 : currentPage;
         totalCards = reset ? null : totalCards;
 
         // Sort cards by release by default
@@ -92,7 +112,7 @@
         filteredCards = cards;
 
         // Filter by color
-        if (filters.color.exact) {
+        if (filters.color.strict) {
             filteredCards = filters.color.white ? filteredCards.filter(x => x[1][0].color_identity.includes("W")) : filteredCards.filter(x => !x[1][0].color_identity.includes("W"));
             filteredCards = filters.color.blue ? filteredCards.filter(x => x[1][0].color_identity.includes("U")) : filteredCards.filter(x => !x[1][0].color_identity.includes("U"));
             filteredCards = filters.color.black ? filteredCards.filter(x => x[1][0].color_identity.includes("B")) : filteredCards.filter(x => !x[1][0].color_identity.includes("B"));
@@ -142,6 +162,8 @@
         totalCards = totalCards ? totalCards : filteredCards.length;
 
         //console.log(filteredCards);
+
+        updateURLParams();
     }
 
     const clearSearch = () => {
@@ -205,8 +227,8 @@
                 <div class="filter__divider"></div>
 
                 <div class="filter-group">
-                    <input class="switch-box" type="checkbox" id="exact-match" bind:checked={filters.color.exact} on:change={filterCards} />
-                    <label class="switch" for="exact-match"></label>
+                    <input class="switch-box" type="checkbox" id="strict-match" bind:checked={filters.color.strict} on:change={filterCards} />
+                    <label class="switch" for="strict-match"></label>
     
                     <div class="filter__label">Strict</div>
                 </div>
@@ -265,14 +287,14 @@
 </div>
 
 <div class="grid-contain">
-    {#key page}
+    {#key currentPage}
         {#if filteredCards}
             {#if filteredCards.length === 0}
                 <div class="grid-status">No Results</div>
             {:else}
                 <div class="card-grid">
                     {#key filteredCards}
-                        {#each filteredCards.slice(page * filters.pageSize, page * filters.pageSize + filters.pageSize) as card, i}
+                        {#each filteredCards.slice(currentPage * filters.pageSize, currentPage * filters.pageSize + filters.pageSize) as card, i}
                             <div class="card" class:card--dual={card[1][0].layout=="transform"} in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }}>
                                 <div class="card__image">
                                     {#if card[1][0].image_uris}
@@ -343,30 +365,30 @@
     <div class="filters pagination-contain">
         <div class="filter">
             <div class="filter-group">
-                <button class="button" disabled={page == 0 ? true : false} on:click={() => page = 0}>
+                <button class="button" disabled={currentPage == 0 ? true : false} on:click={() => currentPage = 0}>
                     <img src="ArrowLeftEnd.svg" alt="First Page" />
                 </button>
-                <button class="button" disabled={page == 0 ? true : false} on:click={() => page--}>
+                <button class="button" disabled={currentPage == 0 ? true : false} on:click={() => currentPage--}>
                     <img src="ArrowLeft.svg" alt="Previous Page" />
                 </button>
             </div>
 
             {#if filteredCards}
                 <div class="filter-group">
-                    <div class="filter__label small-hide">Page {page + 1}</div>
+                    <div class="filter__label small-hide">Page {currentPage + 1}</div>
                     <div class="filter__divider small-hide"></div>
                     <div class="filter__label">
-                        {totalCards ? (page * filters.pageSize + 1) + " - " + (Math.min((page + 1) * filters.pageSize, totalCards)) + " of " : ""}
+                        {totalCards ? (currentPage * filters.pageSize + 1) + " - " + (Math.min((currentPage + 1) * filters.pageSize, totalCards)) + " of " : ""}
                         {totalCards} {totalCards == 1 ? "Result" : "Results"}
                     </div>
                 </div>
             {/if}
 
             <div class="filter-group">
-                <button class="button" disabled={page == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => page++}>
+                <button class="button" disabled={currentPage == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => currentPage++}>
                     <img src="ArrowRight.svg" alt="Next Page" />
                 </button>
-                <button class="button" disabled={page == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => page = totalPages - 1}>
+                <button class="button" disabled={currentPage == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => currentPage = totalPages - 1}>
                     <img src="ArrowRightEnd.svg" alt="Last Page" />
                 </button>
             </div>
