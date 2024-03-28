@@ -151,7 +151,7 @@
         totalPages = Math.ceil(filteredCards.length / filters.pageSize);
         totalCards = totalCards ? totalCards : filteredCards.length;
 
-        //console.log(filteredCards);
+        console.log(filteredCards);
 
         updateURLParams();
     }
@@ -369,6 +369,12 @@
                                             {/if}
                                         </span>
                                     </div>
+                                    {#if card[1].length > 1}
+                                        <div class="other-prints">
+                                            <span>+{card[1].length-1}</span>
+                                            <img src="Print.svg" alt="Printings" />
+                                        </div>
+                                    {/if}
                                     <span>{#if card[1][0].released_at}{card[1][0].released_at}{:else}--{/if}</span>
                                 </div>
                             </div>
@@ -646,6 +652,12 @@
         background: linear-gradient(90deg, rgba(191,147,255,1) 0%, rgba(115,239,255,1) 100%);
         background-clip: text;
         -webkit-text-fill-color: transparent;
+    }
+
+    .other-prints {
+        display: flex;
+        gap: 4px;
+        color: var(--Text-Secondary);
     }
 
     .pagination-contain {
