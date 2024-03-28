@@ -10,6 +10,7 @@
     const queryS = $page.url.searchParams.get('s') ? $page.url.searchParams.get('s') : false;
     let mString;
     let sVal;
+    let sString;
 
     // Import SVGs - for better formatting
     import svgColorW from "../lib/svg/white.svelte";
@@ -84,18 +85,6 @@
         // Initial filter
         filterCards();
     });
-
-    $: updateURLParams = async () => {
-        mString = 
-            (filters.color.white ? 'w' : '')+
-            (filters.color.blue ? 'u' : '')+
-            (filters.color.black ? 'b' : '')+
-            (filters.color.red ? 'r' : '')+
-            (filters.color.green ? 'g' : '')+
-            (filters.color.colorless ? 'c' : '');
-        sVal = filters.color.strict ? true : false;
-        goto('?m='+mString+'&s='+sVal);
-    }
 
     $: filterCards = async (reset) => {
         // Force a page reset - used for clearing search term
@@ -174,6 +163,19 @@
         filterCards(true);
     }
 
+    const updateURLParams = async () => {
+        mString = 
+            (filters.color.white ? 'w' : '')+
+            (filters.color.blue ? 'u' : '')+
+            (filters.color.black ? 'b' : '')+
+            (filters.color.red ? 'r' : '')+
+            (filters.color.green ? 'g' : '')+
+            (filters.color.colorless ? 'c' : '');
+        sVal = filters.color.strict ? true : false;
+        sString = searchTerm ? '&search='+searchTerm : '';
+        goto('?m='+mString+'&s='+sVal+sString);
+    }
+
     // Card image preload
     const preload = async (src) => {
         const resp = await fetch(src);
@@ -235,7 +237,7 @@
             </fieldset>
 
             <fieldset class="filter">
-                <form class="search-form" on:submit={filterCards} on:reset={clearSearch}>
+                <form class="search-form" on:submit|preventDefault={filterCards} on:reset={clearSearch}>
                     <input type="text" class="search" placeholder="Search" bind:value={searchTerm} on:change={filterCards} />
                     {#if searchTerm}
                         <button type="reset" class="search-clear">
