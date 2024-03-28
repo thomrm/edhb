@@ -8,9 +8,10 @@
     // URL params
     const queryM = $page.url.searchParams.get('m') ? $page.url.searchParams.get('m') : "wubrg";
     const queryS = $page.url.searchParams.get('s') ? $page.url.searchParams.get('s') : false;
+    const queryQ = $page.url.searchParams.get('q') ? $page.url.searchParams.get('q') : '';
     let mString;
     let sVal;
-    let sString;
+    let qString;
 
     // Import SVGs - for better formatting
     import svgColorW from "../lib/svg/white.svelte";
@@ -43,7 +44,7 @@
         pageSize: 30
     }
     let currentPage = 0;
-    let searchTerm;
+    let searchTerm = queryQ ? queryQ : '';
 
     // Total numbers for display
     let totalCards;
@@ -172,8 +173,8 @@
             (filters.color.green ? 'g' : '')+
             (filters.color.colorless ? 'c' : '');
         sVal = filters.color.strict ? true : false;
-        sString = searchTerm ? '&search='+searchTerm : '';
-        goto('?m='+mString+'&s='+sVal+sString);
+        qString = searchTerm ? '&q='+searchTerm : '';
+        goto('?m='+mString+'&s='+sVal+qString);
     }
 
     // Card image preload
