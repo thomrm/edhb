@@ -123,7 +123,12 @@
             filteredCards = filteredCards.sort((a, b) => (filters.sortAsc ? 1 : -1) * a[1][0].name.localeCompare(b[1][0].name));
         }
         if (filters.sortType === 'cmc') {
-            filteredCards = filteredCards.sort((a, b) => (filters.sortAsc ? a[1][0].cmc - b[1][0].cmc : b[1][0].cmc - a[1][0].cmc) || (a[1][0].name.localeCompare(b[1][0].name)) || (new Date(b[1][0].released_at) - new Date(a[1][0].released_at)));
+            filteredCards = filteredCards.sort((a, b) => {
+                a = a[1][0].layout.includes("reversible_card") ? a[1][0].card_faces[0] : a[1][0];
+                b = b[1][0].layout.includes("reversible_card") ? b[1][0].card_faces[0] : b[1][0];
+
+                return (filters.sortAsc ? a.cmc - b.cmc : b.cmc - a.cmc) || (a.name.localeCompare(b.name)) || (new Date(b.released_at) - new Date(a.released_at));
+            });
         }
         if (filters.sortType === 'release') {
             filteredCards = filteredCards.sort((a, b) => (filters.sortAsc ? new Date(a[1][0].released_at) - new Date(b[1][0].released_at) : new Date(b[1][0].released_at) - new Date(a[1][0].released_at)) || (a[1][0].name.localeCompare(b[1][0].name)));
@@ -324,7 +329,7 @@
                 <div class="card-grid">
                     {#key filteredCards}
                         {#each filteredCards.slice(currentPage * filters.pageSize, currentPage * filters.pageSize + filters.pageSize) as card, i}
-                            <div class="card" class:card--dual={card[1][0].layout=="transform"} in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }}>
+                            <div class="card" class:card--dual={card[1][0].layout=="transform" || card[1][0].layout=="reversible_card"} in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }}>
                                 <div class="card__image">
                                     {#if card[1][0].image_uris}
                                         <img class="card-placeholder" src="/Placeholder.svg" alt="Placeholder" />
