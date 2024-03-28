@@ -3,15 +3,6 @@
     import { fly, fade } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
 
-    let cardsRaw = [];
-    let cardsPre;
-    let cards;
-    let filteredCards;
-    let totalCards;
-    let page = 0;
-    let pageTotal = 0;
-    let searchTerm;
-
     // Import SVGs - for better formatting
     import svgColorW from "../lib/svg/white.svelte";
     import svgColorU from "../lib/svg/blue.svelte";
@@ -20,41 +11,53 @@
     import svgColorG from "../lib/svg/green.svelte";
     import svgColorC from "../lib/svg/colorless.svelte";
 
-    // Default sorting and filters
-    let colorW = true;
-    let colorU = true;
-    let colorB = true;
-    let colorR = true;
-    let colorG = true;
-    let colorC = false;
+    // Full card lists
+    let cardsRaw = [];
+    let cardsPre;
+    let cards;
 
-    let exact = false;
+    // Card filters and sorting
+    let filteredCards;
+    let filters = {
+        color: {
+            white: true,
+            blue: true,
+            black: true,
+            red: true,
+            green: true,
+            colorless: false,
+            exact: false
+        },
+        latestPrint: true,
+        sortType: "release",
+        sortAsc: false,
+        pageSize: 30
+    }
+    let page = 0;
+    let searchTerm;
 
-    let latestPrint = true;
-    let sortType = "release";
-    let sortAsc = false;
-
-    let pageSize = 30;
+    // Total numbers for display
+    let totalCards;
+    let totalPages;
 
     // Object.groupBy() alternative - safari fix
     const groupBy = (x,f)=>x.reduce((a,b,i)=>((a[f(b,i,x)]||=[]).push(b),a),{});
 
     // Scryfall search filters
-    let filtersList = [
+    let filtersString = [
         '%28%28type%3Acreature+type%3Alegendary%29+OR+%28oracle%3A"can+be+your+commander"+type%3Aplaneswalker%29+OR+%28Grist%2C+The+Hunger+Tide%29%29',
         '%28game%3Apaper%29',
         'unique%3Aprints'
     ]
-    let filters = filtersList.join("+");
     
     onMount(async () => {
         // Get data from Scryfall api
-        const response = await fetch('https://api.scryfall.com/cards/search?q='+filters);
+        const response = await fetch('https://api.scryfall.com/cards/search?q='+filtersString.join("+"));
         const data = await response.json();
 
         // Combine all pages into one object
         for (let i = 1; i <= Math.ceil(data.total_cards / 175); i++) {
-            const rawPage = await fetch('https://api.scryfall.com/cards/search?q='+filters+'&page='+i);
+            const rawPage = await fetch('https://api.scryfall.com/cards/search?q='+filtersString.join("+")+'&page='+i);
             const rawPageData = await rawPage.json();
 
             cardsRaw = cardsRaw.concat(rawPageData.data);
@@ -80,7 +83,7 @@
         totalCards = reset ? null : totalCards;
 
         // Sort cards by release by default
-        cards = cardsPre.sort((a, b) => (latestPrint ? new Date(b.released_at) - new Date(a.released_at) : new Date(a.released_at) - new Date(b.released_at)));
+        cards = cardsPre.sort((a, b) => (filters.latestPrint ? new Date(b.released_at) - new Date(a.released_at) : new Date(a.released_at) - new Date(b.released_at)));
         
         // Group all prints together
         cards = Object.entries(groupBy(cards, ({ name }) => name));
@@ -89,38 +92,33 @@
         filteredCards = cards;
 
         // Filter by color
-        if (exact) {
-            filteredCards = colorW ? filteredCards.filter(x => x[1][0].color_identity.includes("W")) : filteredCards.filter(x => !x[1][0].color_identity.includes("W"));
-            filteredCards = colorU ? filteredCards.filter(x => x[1][0].color_identity.includes("U")) : filteredCards.filter(x => !x[1][0].color_identity.includes("U"));
-            filteredCards = colorB ? filteredCards.filter(x => x[1][0].color_identity.includes("B")) : filteredCards.filter(x => !x[1][0].color_identity.includes("B"));
-            filteredCards = colorR ? filteredCards.filter(x => x[1][0].color_identity.includes("R")) : filteredCards.filter(x => !x[1][0].color_identity.includes("R"));
-            filteredCards = colorG ? filteredCards.filter(x => x[1][0].color_identity.includes("G")) : filteredCards.filter(x => !x[1][0].color_identity.includes("G"));
-            filteredCards = colorC ? filteredCards.filter(x => x[1][0].color_identity.length == 0) : filteredCards.filter(x => !x[1][0].color_identity.length == 0);
+        if (filters.color.exact) {
+            filteredCards = filters.color.white ? filteredCards.filter(x => x[1][0].color_identity.includes("W")) : filteredCards.filter(x => !x[1][0].color_identity.includes("W"));
+            filteredCards = filters.color.blue ? filteredCards.filter(x => x[1][0].color_identity.includes("U")) : filteredCards.filter(x => !x[1][0].color_identity.includes("U"));
+            filteredCards = filters.color.black ? filteredCards.filter(x => x[1][0].color_identity.includes("B")) : filteredCards.filter(x => !x[1][0].color_identity.includes("B"));
+            filteredCards = filters.color.red ? filteredCards.filter(x => x[1][0].color_identity.includes("R")) : filteredCards.filter(x => !x[1][0].color_identity.includes("R"));
+            filteredCards = filters.color.green ? filteredCards.filter(x => x[1][0].color_identity.includes("G")) : filteredCards.filter(x => !x[1][0].color_identity.includes("G"));
+            filteredCards = filters.color.colorless ? filteredCards.filter(x => x[1][0].color_identity.length == 0) : filteredCards.filter(x => !x[1][0].color_identity.length == 0);
         } else {
-            filteredCards = !colorW ? filteredCards.filter(x => !x[1][0].color_identity.includes("W")) : filteredCards;
-            filteredCards = !colorU ? filteredCards.filter(x => !x[1][0].color_identity.includes("U")) : filteredCards;
-            filteredCards = !colorB ? filteredCards.filter(x => !x[1][0].color_identity.includes("B")) : filteredCards;
-            filteredCards = !colorR ? filteredCards.filter(x => !x[1][0].color_identity.includes("R")) : filteredCards;
-            filteredCards = !colorG ? filteredCards.filter(x => !x[1][0].color_identity.includes("G")) : filteredCards;
-            filteredCards = !colorC ? filteredCards.filter(x => !x[1][0].color_identity.length == 0) : filteredCards;
+            filteredCards = !filters.color.white ? filteredCards.filter(x => !x[1][0].color_identity.includes("W")) : filteredCards;
+            filteredCards = !filters.color.blue ? filteredCards.filter(x => !x[1][0].color_identity.includes("U")) : filteredCards;
+            filteredCards = !filters.color.black ? filteredCards.filter(x => !x[1][0].color_identity.includes("B")) : filteredCards;
+            filteredCards = !filters.color.red ? filteredCards.filter(x => !x[1][0].color_identity.includes("R")) : filteredCards;
+            filteredCards = !filters.color.green ? filteredCards.filter(x => !x[1][0].color_identity.includes("G")) : filteredCards;
+            filteredCards = !filters.color.colorless ? filteredCards.filter(x => !x[1][0].color_identity.length == 0) : filteredCards;
         }
 
         // Sort filtered cards
-        if (sortType === 'name') {
-            filteredCards = filteredCards.sort((a, b) => (sortAsc ? 1 : -1) * a[1][0].name.localeCompare(b[1][0].name));
+        if (filters.sortType === 'name') {
+            filteredCards = filteredCards.sort((a, b) => (filters.sortAsc ? 1 : -1) * a[1][0].name.localeCompare(b[1][0].name));
         }
-        if (sortType === 'cmc') {
-            filteredCards = filteredCards.sort((a, b) => (sortAsc ? a[1][0].cmc - b[1][0].cmc : b[1][0].cmc - a[1][0].cmc) || (a[1][0].name.localeCompare(b[1][0].name)) || (new Date(b[1][0].released_at) - new Date(a[1][0].released_at)));
+        if (filters.sortType === 'cmc') {
+            filteredCards = filteredCards.sort((a, b) => (filters.sortAsc ? a[1][0].cmc - b[1][0].cmc : b[1][0].cmc - a[1][0].cmc) || (a[1][0].name.localeCompare(b[1][0].name)) || (new Date(b[1][0].released_at) - new Date(a[1][0].released_at)));
         }
-        if (sortType === 'release') {
-            filteredCards = filteredCards.sort((a, b) => (sortAsc ? new Date(a[1][0].released_at) - new Date(b[1][0].released_at) : new Date(b[1][0].released_at) - new Date(a[1][0].released_at)) || (a[1][0].name.localeCompare(b[1][0].name)));
+        if (filters.sortType === 'release') {
+            filteredCards = filteredCards.sort((a, b) => (filters.sortAsc ? new Date(a[1][0].released_at) - new Date(b[1][0].released_at) : new Date(b[1][0].released_at) - new Date(a[1][0].released_at)) || (a[1][0].name.localeCompare(b[1][0].name)));
         }
 
-        // Apply searched term to filtered cards
-        searchCards();
-    }
-
-    const searchCards = async () => {
         // Filter displayed cards by search term
         filteredCards = searchTerm ? filteredCards.filter(function(x) {
             if (x[1][0].card_faces) {
@@ -140,13 +138,13 @@
         }) : filteredCards;
 
         // Set card and page totals
-        pageTotal = Math.ceil(filteredCards.length / pageSize);
+        totalPages = Math.ceil(filteredCards.length / filters.pageSize);
         totalCards = totalCards ? totalCards : filteredCards.length;
 
         //console.log(filteredCards);
     }
 
-    const clearSearch = async () => {
+    const clearSearch = () => {
         // Clear search term
         searchTerm = null;
 
@@ -173,32 +171,32 @@
         <div class="filters-group">
             <fieldset class="filter filter--color">
                 <div class="filter-group">
-                    <input type="checkbox" id="colorW" name="White" bind:checked={colorW} on:change={filterCards} />
+                    <input type="checkbox" id="colorW" name="White" bind:checked={filters.color.white} on:change={filterCards} />
                     <label class="color-toggle" for="colorW">
                         <svelte:component this={svgColorW} />
                     </label>
 
-                    <input type="checkbox" id="colorU" name="Blue" bind:checked={colorU} on:change={filterCards} />
+                    <input type="checkbox" id="colorU" name="Blue" bind:checked={filters.color.blue} on:change={filterCards} />
                     <label class="color-toggle" for="colorU">
                         <svelte:component this={svgColorU} />
                     </label>
 
-                    <input type="checkbox" id="colorB" name="Black" bind:checked={colorB} on:change={filterCards} />
+                    <input type="checkbox" id="colorB" name="Black" bind:checked={filters.color.black} on:change={filterCards} />
                     <label class="color-toggle" for="colorB">
                         <svelte:component this={svgColorB} />
                     </label>
 
-                    <input type="checkbox" id="colorR" name="Red" bind:checked={colorR} on:change={filterCards} />
+                    <input type="checkbox" id="colorR" name="Red" bind:checked={filters.color.red} on:change={filterCards} />
                     <label class="color-toggle" for="colorR">
                         <svelte:component this={svgColorR} />
                     </label>
 
-                    <input type="checkbox" id="colorG" name="Green" bind:checked={colorG} on:change={filterCards} />
+                    <input type="checkbox" id="colorG" name="Green" bind:checked={filters.color.green} on:change={filterCards} />
                     <label class="color-toggle" for="colorG">
                         <svelte:component this={svgColorG} />
                     </label>
 
-                    <input type="checkbox" id="colorC" name="Colorless" bind:checked={colorC} on:change={filterCards} />
+                    <input type="checkbox" id="colorC" name="Colorless" bind:checked={filters.color.colorless} on:change={filterCards} />
                     <label class="color-toggle" for="colorC">
                         <svelte:component this={svgColorC} />
                     </label>
@@ -207,7 +205,7 @@
                 <div class="filter__divider"></div>
 
                 <div class="filter-group">
-                    <input class="switch-box" type="checkbox" id="exact-match" bind:checked={exact} on:change={filterCards} />
+                    <input class="switch-box" type="checkbox" id="exact-match" bind:checked={filters.color.exact} on:change={filterCards} />
                     <label class="switch" for="exact-match"></label>
     
                     <div class="filter__label">Strict</div>
@@ -228,10 +226,10 @@
 
         <div class="filters-group">
             <fieldset class="filter">
-                <input class="toggle-box" type="checkbox" id="printing" bind:checked={latestPrint} on:change={filterCards} />
+                <input class="toggle-box" type="checkbox" id="printing" bind:checked={filters.latestPrint} on:change={filterCards} />
                 <label class="toggle" for="printing">
                     <div class="filter__label">
-                        {#if latestPrint}
+                        {#if filters.latestPrint}
                             Latest Print
                         {:else}
                             First Print
@@ -241,7 +239,7 @@
 
                 <div class="filter__divider"></div>
 
-                <select class="select-box" name="sort-type" id="sort-type" bind:value={sortType} on:change={filterCards}>
+                <select class="select-box" name="sort-type" id="sort-type" bind:value={filters.sortType} on:change={filterCards}>
                     <option value="name">Sort by Name</option>
                     <option value="cmc">Sort by CMC</option>
                     <option value="release">Sort by Release</option>
@@ -249,10 +247,10 @@
 
                 <div class="filter__divider"></div>
 
-                <input class="toggle-box" type="checkbox" id="sort-direction" bind:checked={sortAsc} on:change={filterCards} />
+                <input class="toggle-box" type="checkbox" id="sort-direction" bind:checked={filters.sortAsc} on:change={filterCards} />
                 <label class="toggle" for="sort-direction">
                     <div class="filter__label">
-                        {#if sortAsc}
+                        {#if filters.sortAsc}
                             <img src="Asc.svg" alt="Ascending" />
                             Asc
                         {:else}
@@ -274,7 +272,7 @@
             {:else}
                 <div class="card-grid">
                     {#key filteredCards}
-                        {#each filteredCards.slice(page * pageSize, page * pageSize + pageSize) as card, i}
+                        {#each filteredCards.slice(page * filters.pageSize, page * filters.pageSize + filters.pageSize) as card, i}
                             <div class="card" class:card--dual={card[1][0].layout=="transform"} in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }}>
                                 <div class="card__image">
                                     {#if card[1][0].image_uris}
@@ -354,21 +352,21 @@
             </div>
 
             {#if filteredCards}
-                <div class="filter-group" transition:fade={{duration: 200, delay: 50}}>
+                <div class="filter-group">
                     <div class="filter__label small-hide">Page {page + 1}</div>
                     <div class="filter__divider small-hide"></div>
                     <div class="filter__label">
-                        {totalCards ? (page * pageSize + 1) + " - " + (Math.min((page + 1) * pageSize, totalCards)) + " of " : ""}
+                        {totalCards ? (page * filters.pageSize + 1) + " - " + (Math.min((page + 1) * filters.pageSize, totalCards)) + " of " : ""}
                         {totalCards} {totalCards == 1 ? "Result" : "Results"}
                     </div>
                 </div>
             {/if}
 
             <div class="filter-group">
-                <button class="button" disabled={page == pageTotal - 1 || pageTotal == 0 ? true : false} on:click={() => page++}>
+                <button class="button" disabled={page == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => page++}>
                     <img src="ArrowRight.svg" alt="Next Page" />
                 </button>
-                <button class="button" disabled={page == pageTotal - 1 || pageTotal == 0 ? true : false} on:click={() => page = pageTotal - 1}>
+                <button class="button" disabled={page == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => page = totalPages - 1}>
                     <img src="ArrowRightEnd.svg" alt="Last Page" />
                 </button>
             </div>
