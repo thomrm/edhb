@@ -368,10 +368,10 @@
     <div class="filters pagination-contain">
         <div class="filter">
             <div class="filter-group">
-                <button class="button" disabled={currentPage == 0 ? true : false} on:click={() => currentPage = 0}>
+                <button class="button" disabled={currentPage == 0 ? true : false} on:click={() => {window.scrollTo(0,0); currentPage = 0;}}>
                     <img src="ArrowLeftEnd.svg" alt="First Page" />
                 </button>
-                <button class="button" disabled={currentPage == 0 ? true : false} on:click={() => currentPage--}>
+                <button class="button" disabled={currentPage == 0 ? true : false} on:click={() => {window.scrollTo(0,0); currentPage--;}}>
                     <img src="ArrowLeft.svg" alt="Previous Page" />
                 </button>
             </div>
@@ -388,10 +388,10 @@
             {/if}
 
             <div class="filter-group">
-                <button class="button" disabled={currentPage == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => currentPage++}>
+                <button class="button" disabled={currentPage == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => {window.scrollTo(0,0); currentPage++;}}>
                     <img src="ArrowRight.svg" alt="Next Page" />
                 </button>
-                <button class="button" disabled={currentPage == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => currentPage = totalPages - 1}>
+                <button class="button" disabled={currentPage == totalPages - 1 || totalPages == 0 || !totalPages ? true : false} on:click={() => {window.scrollTo(0,0); currentPage = totalPages - 1;}}>
                     <img src="ArrowRightEnd.svg" alt="Last Page" />
                 </button>
             </div>
