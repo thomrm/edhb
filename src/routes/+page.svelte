@@ -164,6 +164,24 @@
         filterCards(true);
     }
 
+    const reset = () => {
+        // Set to defaults
+        filters.color.white = true;
+        filters.color.blue = true;
+        filters.color.black = true;
+        filters.color.red = true;
+        filters.color.green = true;
+        filters.color.colorless = false;
+        filters.color.strict = false;
+        filters.latestPrint = true;
+        filters.sortType = "release";
+        filters.sortAsc = false;
+        searchTerm = null;
+
+        // Reset displayed cards
+        filterCards(true);
+    }
+
     const updateURLParams = async () => {
         mString = 
             (filters.color.white ? 'w' : '')+
@@ -234,6 +252,14 @@
                     <label class="switch" for="strict-match"></label>
     
                     <div class="filter__label">Strict</div>
+                </div>
+
+                <div class="filter__divider"></div>
+
+                <div class="filter-group">
+                    <button class="button" on:click={reset}>
+                        <img src="Reset.svg" alt="Reset" />
+                    </button>
                 </div>
             </fieldset>
 
