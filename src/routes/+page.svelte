@@ -6,7 +6,7 @@
     import { goto } from "$app/navigation";
 
     // URL params
-    const queryM = $page.url.searchParams.get('m') ? $page.url.searchParams.get('m') : "wubrg";
+    const queryM = $page.url.searchParams.get('m') ? $page.url.searchParams.get('m') : "";
     const queryS = $page.url.searchParams.get('s') ? $page.url.searchParams.get('s') : false;
     const queryQ = $page.url.searchParams.get('q') ? $page.url.searchParams.get('q') : '';
     let mString;
@@ -20,6 +20,9 @@
     import svgColorR from "../lib/svg/red.svelte";
     import svgColorG from "../lib/svg/green.svelte";
     import svgColorC from "../lib/svg/colorless.svelte";
+
+    // Menu for small screens
+    let showMenu = false;
 
     // Full card lists
     let cardsRaw = [];
@@ -102,20 +105,23 @@
         filteredCards = cards;
 
         // Filter by color
-        if (filters.color.strict) {
-            filteredCards = filters.color.white ? filteredCards.filter(x => x[1][0].color_identity.includes("W")) : filteredCards.filter(x => !x[1][0].color_identity.includes("W"));
-            filteredCards = filters.color.blue ? filteredCards.filter(x => x[1][0].color_identity.includes("U")) : filteredCards.filter(x => !x[1][0].color_identity.includes("U"));
-            filteredCards = filters.color.black ? filteredCards.filter(x => x[1][0].color_identity.includes("B")) : filteredCards.filter(x => !x[1][0].color_identity.includes("B"));
-            filteredCards = filters.color.red ? filteredCards.filter(x => x[1][0].color_identity.includes("R")) : filteredCards.filter(x => !x[1][0].color_identity.includes("R"));
-            filteredCards = filters.color.green ? filteredCards.filter(x => x[1][0].color_identity.includes("G")) : filteredCards.filter(x => !x[1][0].color_identity.includes("G"));
-            filteredCards = filters.color.colorless ? filteredCards.filter(x => x[1][0].color_identity.length == 0) : filteredCards.filter(x => !x[1][0].color_identity.length == 0);
-        } else {
-            filteredCards = !filters.color.white ? filteredCards.filter(x => !x[1][0].color_identity.includes("W")) : filteredCards;
-            filteredCards = !filters.color.blue ? filteredCards.filter(x => !x[1][0].color_identity.includes("U")) : filteredCards;
-            filteredCards = !filters.color.black ? filteredCards.filter(x => !x[1][0].color_identity.includes("B")) : filteredCards;
-            filteredCards = !filters.color.red ? filteredCards.filter(x => !x[1][0].color_identity.includes("R")) : filteredCards;
-            filteredCards = !filters.color.green ? filteredCards.filter(x => !x[1][0].color_identity.includes("G")) : filteredCards;
-            filteredCards = !filters.color.colorless ? filteredCards.filter(x => !x[1][0].color_identity.length == 0) : filteredCards;
+        if (filters.color.white || filters.color.blue || filters.color.black || filters.color.red || filters.color.green || filters.color.colorless) {
+            filteredCards = filters.color.white ? filteredCards.filter(x => x[1][0].color_identity.includes("W")) : (filters.color.strict ? filteredCards.filter(x => !x[1][0].color_identity.includes("W")) : filteredCards);
+            filteredCards = filters.color.blue ? filteredCards.filter(x => x[1][0].color_identity.includes("U")) : (filters.color.strict ? filteredCards.filter(x => !x[1][0].color_identity.includes("U")) : filteredCards);
+            filteredCards = filters.color.black ? filteredCards.filter(x => x[1][0].color_identity.includes("B")) : (filters.color.strict ? filteredCards.filter(x => !x[1][0].color_identity.includes("B")) : filteredCards);
+            filteredCards = filters.color.red ? filteredCards.filter(x => x[1][0].color_identity.includes("R")) : (filters.color.strict ? filteredCards.filter(x => !x[1][0].color_identity.includes("R")) : filteredCards);
+            filteredCards = filters.color.green ? filteredCards.filter(x => x[1][0].color_identity.includes("G")) : (filters.color.strict ? filteredCards.filter(x => !x[1][0].color_identity.includes("G")) : filteredCards);
+            filteredCards = filters.color.colorless ? filteredCards.filter(x => x[1][0].color_identity.length == 0) : (filters.color.strict ? filteredCards.filter(x => !x[1][0].color_identity.length == 0) : filteredCards);
+
+            // Alternate non-strict filter
+            // filteredCards = filteredCards.filter(function(x) {
+            //     return  (filters.color.white ? x[1][0].color_identity.includes("W") : '') ||
+            //             (filters.color.blue ? x[1][0].color_identity.includes("U") : '') ||
+            //             (filters.color.black ? x[1][0].color_identity.includes("B") : '') ||
+            //             (filters.color.red ? x[1][0].color_identity.includes("R") : '') ||
+            //             (filters.color.green ? x[1][0].color_identity.includes("G") : '') ||
+            //             (filters.color.colorless ? x[1][0].color_identity.length == 0 : '');
+            // });
         }
 
         // Sort filtered cards
@@ -171,11 +177,11 @@
 
     const reset = () => {
         // Set to defaults
-        filters.color.white = true;
-        filters.color.blue = true;
-        filters.color.black = true;
-        filters.color.red = true;
-        filters.color.green = true;
+        filters.color.white = false;
+        filters.color.blue = false;
+        filters.color.black = false;
+        filters.color.red = false;
+        filters.color.green = false;
         filters.color.colorless = false;
         filters.color.strict = false;
         filters.latestPrint = true;
@@ -215,7 +221,25 @@
 </script>
 
 <div class="filters-contain filters-contain--top">
-    <div class="filters">
+    <div class="filters small-show">
+        <div class="filter">
+            <div class="filter-group">
+                <button class="button" on:click={() => (showMenu = !showMenu)}>
+                    <img src="Menu.svg" alt="Menu" />
+                </button>
+            </div>
+
+            <div class="filter__divider"></div>
+
+            <div class="filter-group">
+                <button class="button" on:click={reset}>
+                    <img src="Reset.svg" alt="Reset" />
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class:show-menu={showMenu} class="filters filters--menu">
         <div class="filters-group">
             <fieldset class="filter filter--color">
                 <div class="filter-group">
@@ -259,16 +283,16 @@
                     <div class="filter__label">Strict</div>
                 </div>
 
-                <div class="filter__divider"></div>
+                <div class="filter__divider small-hide"></div>
 
-                <div class="filter-group">
+                <div class="filter-group small-hide">
                     <button class="button" on:click={reset}>
                         <img src="Reset.svg" alt="Reset" />
                     </button>
                 </div>
             </fieldset>
 
-            <fieldset class="filter">
+            <fieldset class="filter filter--search">
                 <form class="search-form" on:submit|preventDefault={filterCards} on:reset={clearSearch}>
                     <input type="text" class="search" placeholder="Search" bind:value={searchTerm} on:change={filterCards} />
                     {#if searchTerm}
@@ -281,7 +305,7 @@
         </div>
 
         <div class="filters-group">
-            <fieldset class="filter">
+            <fieldset class="filter filter--sort">
                 <input class="toggle-box" type="checkbox" id="printing" bind:checked={filters.latestPrint} on:change={filterCards} />
                 <label class="toggle" for="printing">
                     <div class="filter__label">
@@ -380,7 +404,7 @@
                                             <img src="Print.svg" alt="Printings" />
                                         </div>
                                     {/if}
-                                    <span>{#if card[1][0].released_at}{card[1][0].released_at}{:else}--{/if}</span>
+                                    <span>{#if card[1][0].released_at}{card[1][0].released_at.slice(0,4)}{:else}--{/if}</span>
                                 </div>
                             </div>
                         {/each}
@@ -464,6 +488,8 @@
         padding: 20px 0;
         display: flex;
         justify-content: center;
+        flex-direction: column;
+        gap: 10px;
     }
 
     .filters-contain--top {
@@ -635,7 +661,7 @@
 
     .card__info {
         font-size: .9rem;
-        padding: 0 15px;
+        padding: 0 12px;
         display: flex;
         justify-content: space-between;
     }
@@ -857,6 +883,10 @@
         border: none;
     }
 
+    .small-show {
+        display: none;
+    }
+
     @media (hover: hover) {
         .search-form:hover, select:hover, .switch:hover, .toggle:hover, .button:hover, .color-toggle:hover {
             border-color: var(--Primary-Color);
@@ -880,6 +910,23 @@
     @media screen and (max-width: 456px) {
         .small-hide {
             display: none;
+        }
+
+        .small-show {
+            display: flex;
+        }
+
+        .filters-contain--top {
+            height: 48px;
+            justify-content: flex-start;
+        }
+
+        .filters--menu {
+            display: none;
+        }
+
+        .show-menu {
+            display: flex;
         }
 
         .filters, .filters-group, .filter, .search-form, .search, .search:placeholder-shown, .search:focus {
