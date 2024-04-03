@@ -1,5 +1,6 @@
 <script>
     import Card from './card.svelte';
+    import { fade } from 'svelte/transition';
 
 	export let showModal;
     export let cardPrints;
@@ -25,7 +26,7 @@
         <div class="cards">
             {#if cardPrints}
                 {#key currentPrint}
-                    <div class="modal-card-contain">
+                    <div class="modal-card-contain" in:fade={{duration: 200}}>
                         <Card print={cardPrints[currentPrint]} totalPrints=null delay=50></Card>
                     </div>
                 {/key}
@@ -35,6 +36,13 @@
         <button class="button button--large" disabled={totalPrints == 0 ? true : false} on:click={() => currentPrint = (currentPrint == totalPrints) ? 0 : currentPrint + 1}>
             <img src="ArrowRight.svg" alt="Next" />
         </button>
+    </div>
+    <div class="card-pages">
+        {#if cardPrints}
+            {#each cardPrints as card, i}
+                <div class="card-pages__page" id="page-{i}" class:active={currentPrint == i}></div>
+            {/each}
+        {/if}
     </div>
 </dialog>
 
@@ -86,6 +94,25 @@
     .cards {
         display: flex;
         flex: 1 0 0;
+    }
+
+    .card-pages {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .card-pages__page {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.2);
+        transition: background-color 200ms;
+
+        &.active {
+            background: rgba(255,255,255,1);
+        }
     }
 
     @media screen and (max-width: 540px) {
