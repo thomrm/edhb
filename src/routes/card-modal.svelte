@@ -1,5 +1,4 @@
 <script>
-    import { fade } from 'svelte/transition';
     import Card from './card.svelte';
 
 	export let showModal;
@@ -18,11 +17,6 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
 <dialog class="card-modal" bind:this={dialog} on:close={() => (showModal = false)} on:click|self={() => dialog.close()}>
-    <div class="modal-close">
-        <button class="button button--large" on:click={() => dialog.close()}>
-            <img src="Close.svg" alt="Close" />
-        </button>
-    </div>
     <div class="cards-contain">
         <button class="button button--large" disabled={totalPrints == 0 ? true : false} on:click={() => currentPrint = (currentPrint == 0) ? totalPrints : currentPrint - 1}>
             <img src="ArrowLeft.svg" alt="Previous" />
@@ -31,7 +25,7 @@
         <div class="cards">
             {#if cardPrints}
                 {#key currentPrint}
-                    <div class="modal-card-contain" in:fade={{duration: 200}}>
+                    <div class="modal-card-contain">
                         <Card print={cardPrints[currentPrint]} totalPrints=null delay=50></Card>
                     </div>
                 {/key}
@@ -55,7 +49,7 @@
     }
 
     dialog::backdrop {
-        background: var(--Background-Overlay-Dark);
+        background: rgba(0,0,0,0.9);
     }
 
     dialog[open] {
@@ -70,12 +64,6 @@
 		from { opacity: 0; }
 		to { opacity: 1; }
 	}
-
-    .modal-close {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-    }
 
     .cards-contain {
         padding: 10px;

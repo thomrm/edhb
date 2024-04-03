@@ -69,7 +69,7 @@
         gap: 5px;
         flex-direction: column;
         border-radius: 8% / 6%;
-        background: var(--Background-Overlay-Light);
+        background: var(--Background-Overlay-Dark);
         box-shadow: 0 0 0 1px var(--Border-Color);
         perspective: 2000px;
         color: var(--Text-Primary);
