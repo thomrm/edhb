@@ -73,6 +73,7 @@
         box-shadow: 0 0 0 1px var(--Border-Color);
         perspective: 2000px;
         color: var(--Text-Primary);
+        font-size: inherit;
     }
 
     .card-placeholder {
@@ -114,10 +115,13 @@
     }
 
     .card__info {
-        font-size: .9rem;
-        padding: 0 12px;
+        padding: 0 7%;
         display: flex;
         justify-content: space-between;
+
+        & span {
+            font-size: 0.9em;
+        }
     }
 
     .card__divider {

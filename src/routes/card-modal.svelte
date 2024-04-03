@@ -31,7 +31,7 @@
         <div class="cards">
             {#if cardPrints}
                 {#key currentPrint}
-                    <div class="modal-card-contain" in:fade|global={{duration: 200}}>
+                    <div class="modal-card-contain" in:fade={{duration: 200}}>
                         <Card print={cardPrints[currentPrint]} totalPrints=null delay=50></Card>
                     </div>
                 {/key}
@@ -51,32 +51,59 @@
         border: none;
         max-height: 100%;
         max-width: 100%;
-
-        &::backdrop {
-            background: var(--Background-Overlay-Dark);
-        }
+        z-index: 5;
     }
+
+    dialog::backdrop {
+        background: var(--Background-Overlay-Dark);
+    }
+
+    dialog[open] {
+        animation: fade 400ms ease-out;
+    }
+
+	dialog[open]::backdrop {
+		animation: fade 200ms ease-out;
+	}
+
+	@keyframes fade {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
 
     .modal-close {
         position: fixed;
-        top: 20px;
-        right: 20px;
+        top: 10px;
+        right: 10px;
     }
 
     .cards-contain {
-        padding: 20px;
+        padding: 10px;
         display: flex;
         align-items: center;
-        width: 440px;
+        width: 540px;
+        box-sizing: border-box;
         gap: 10px;
+        font-size: 14px;
     }
 
     .modal-card-contain {
         width: 100%;
+
+        & .card {
+            font-size: inherit;
+        }
     }
 
     .cards {
         display: flex;
         flex: 1 0 0;
+    }
+
+    @media screen and (max-width: 540px) {
+        .cards-contain {
+            width: 100vw;
+            font-size: 2.6vw;
+        }
     }
 </style>
