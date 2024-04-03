@@ -4,3 +4,48 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
     border: 0;
     vertical-align: baseline;
 }
+
+.button {
+    display: flex;
+    height: 32px;
+    width: 32px;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    background: none;
+    border-radius: 999px;
+    padding: 2px;
+    border: 2px solid transparent;
+
+    transition: border-color 200ms;
+
+    color: #fff;
+
+    &:disabled {
+        cursor: default;
+
+        & img {
+            opacity: 0.15;
+        }
+
+        &:hover {
+            border-color: transparent;
+        }
+    }
+}
+
+.button--large {
+    width: 48px;
+    height: 48px;
+
+    & img {
+        width: 50%;
+        height: 50%;
+    }
+}
+
+@media (hover: hover) {
+    .button:hover {
+        border-color: var(--Primary-Color);
+    }
+}

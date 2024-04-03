@@ -1,9 +1,13 @@
 <script>
-    import { onMount } from "svelte";
+    import { onMount } from 'svelte';
     import { fly, fade } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
     import { page } from '$app/stores';
-    import { goto } from "$app/navigation";
+    import { goto } from '$app/navigation';
+    import Card from './card.svelte';
+
+    let showModal = false;
+    import Modal from './card-modal.svelte';
 
     // URL params
     const queryM = $page.url.searchParams.get('m') ? $page.url.searchParams.get('m') : "";
@@ -206,19 +210,15 @@
         goto('?m='+mString+'&s='+sVal+qString);
     }
 
-    // Card image preload
-    const preload = async (src) => {
-        const resp = await fetch(src);
-        const blob = await resp.blob();
-
-        return new Promise(function (resolve) {
-            let reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject('Error: ', error);
-        });
-    };
+    // View all prints modal
+    let cardPrints;
+    const modalData = (card) => {
+        cardPrints = cards.filter(x => x[0].includes(card))[0][1];
+        showModal = true;
+    }
 </script>
+
+<Modal cardPrints={cardPrints} sortAsc={filters.sortAsc} bind:showModal></Modal>
 
 <div class="filters-contain filters-contain--top">
     <div class="filters small-show">
@@ -353,60 +353,9 @@
                 <div class="card-grid">
                     {#key filteredCards}
                         {#each filteredCards.slice(currentPage * filters.pageSize, currentPage * filters.pageSize + filters.pageSize) as card, i}
-                            <div class="card" class:card--dual={card[1][0].layout=="transform" || card[1][0].layout=="reversible_card"} in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }}>
-                                <div class="card__image">
-                                    {#if card[1][0].image_uris}
-                                        <img class="card-placeholder" src="/Placeholder.svg" alt="Placeholder" />
-                                        {#await preload(card[1][0].image_uris.normal)}
-                                            <!--Loading-->
-                                        {:then}
-                                            <img srcset="{card[1][0].image_uris.normal}, {card[1][0].image_uris.large} 2x" src="{card[1][0].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
-                                        {/await}
-                                    {:else}
-                                        {#if card[1][0].card_faces}
-                                            <img class="card-placeholder" src="/Placeholder.svg" alt="Placeholder" />
-                                            {#await preload(card[1][0].card_faces[0].image_uris.normal)}
-                                                <!--Loading-->
-                                            {:then}
-                                                <div class="face-front">
-                                                    <img srcset="{card[1][0].card_faces[0].image_uris.normal}, {card[1][0].card_faces[0].image_uris.large} 2x" src="{card[1][0].card_faces[0].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
-                                                </div>
-                                                <div class="face-back">
-                                                    <img srcset="{card[1][0].card_faces[1].image_uris.normal}, {card[1][0].card_faces[1].image_uris.large} 2x" src="{card[1][0].card_faces[1].image_uris.normal}" alt="{card[1][0].name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
-                                                </div>
-                                            {/await}
-                                        {/if}
-                                    {/if}
-                                </div>
-                                <div class="card__info">
-                                    <div class="price">
-                                        <span>
-                                            {#if card[1][0].prices.usd}
-                                                ${card[1][0].prices.usd}
-                                            {:else}
-                                                --
-                                            {/if}
-                                        </span>
-                                        <div class="card__divider"></div>
-                                        <span class="foil">
-                                            {#if card[1][0].prices.usd_foil}
-                                                ${card[1][0].prices.usd_foil}
-                                            {:else if card[1][0].prices.usd_etched}
-                                                ${card[1][0].prices.usd_etched} &#10023;
-                                            {:else}
-                                                --
-                                            {/if}
-                                        </span>
-                                    </div>
-                                    {#if card[1].length > 1}
-                                        <div class="other-prints">
-                                            <span>+{card[1].length-1}</span>
-                                            <img src="Print.svg" alt="Printings" />
-                                        </div>
-                                    {/if}
-                                    <span>{#if card[1][0].released_at}{card[1][0].released_at.slice(0,4)}{:else}--{/if}</span>
-                                </div>
-                            </div>
+                            <a class="card-link" href="#{card[1][0].name}" in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }} on:click={modalData(card[0])}>
+                                <Card print={card[1][0]} totalPrints={card[1].length} i={i}></Card>
+                            </a>
                         {/each}
                     {/key}
                 </div>
@@ -606,89 +555,11 @@
         gap: 10px;
     }
 
-    .card {
-        display: flex;
-        padding: 5px;
-        gap: 5px;
-        flex-direction: column;
-        border-radius: 8% / 6%;
-        background: var(--Background-Overlay-Light);
-        box-shadow: 0 0 0 1px var(--Border-Color);
-        cursor: pointer;
+    .card-link {
+        text-decoration: none;
         outline: 2px solid transparent;
-        perspective: 2000px;
-
+        border-radius: 8% / 6%;
         transition: outline 200ms;
-    }
-
-    .card-placeholder {
-        width: 100%;
-        height: 100%;
-    }
-
-    .card__image {
-        width: auto;
-        height: 0;
-        padding-top: 140%;
-        position: relative;
-        display: flex;
-        border-radius: 6.5% / 5%;
-
-        transition: transform 600ms;
-        transform-style: preserve-3d;
-
-        & img {
-            width: 100%;
-            height: 100%;
-            border-radius: 6.5% / 5%;
-            position: absolute;
-            top: 0;
-        }
-    }
-
-
-    .face-front, .face-back {
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        backface-visibility: hidden;
-    }
-
-    .face-back {
-        transform: rotateY(180deg);
-    }
-
-    .card__info {
-        font-size: .9rem;
-        padding: 0 12px;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .card__divider {
-        width: 4px;
-        height: 4px;
-        transform: rotate(45deg);
-        background: var(--Background-Object);
-    }
-
-    .price {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .foil {
-        background: linear-gradient(90deg, rgba(191,147,255,1) 0%, rgba(115,239,255,1) 100%);
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .other-prints {
-        display: flex;
-        gap: 4px;
-        color: var(--Text-Secondary);
     }
 
     .pagination-contain {
@@ -698,35 +569,6 @@
 
             & .filter-group {
                 display: flex;
-            }
-        }
-    }
-
-    .button {
-        display: flex;
-        height: 32px;
-        width: 32px;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        background: none;
-        border-radius: 999px;
-        padding: 2px;
-        border: 2px solid transparent;
-
-        transition: border-color 200ms;
-
-        color: #fff;
-
-        &:disabled {
-            cursor: default;
-
-            & img {
-                opacity: 0.15;
-            }
-
-            &:hover {
-                border-color: transparent;
             }
         }
     }
@@ -888,16 +730,12 @@
     }
 
     @media (hover: hover) {
-        .search-form:hover, select:hover, .switch:hover, .toggle:hover, .button:hover, .color-toggle:hover {
+        .search-form:hover, select:hover, .switch:hover, .toggle:hover, .color-toggle:hover {
             border-color: var(--Primary-Color);
         }
 
-        .card:hover {
+        .card-link:hover {
             outline: 2px solid var(--Primary-Color);
-        }
-
-        .card--dual:hover .card__image {
-            transform: rotateY(180deg);
         }
     }
 
