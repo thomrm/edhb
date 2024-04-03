@@ -213,6 +213,7 @@
     // View all prints modal
     let cardPrints;
     const modalData = (card) => {
+        cardPrints = [];
         cardPrints = cards.filter(x => x[0].includes(card))[0][1];
         showModal = true;
     }
@@ -354,7 +355,7 @@
                     {#key filteredCards}
                         {#each filteredCards.slice(currentPage * filters.pageSize, currentPage * filters.pageSize + filters.pageSize) as card, i}
                             <a class="card-link" href="#{card[1][0].name}" in:fly|global={{ delay: (i+1)*50, duration: 800, y: 150, opacity: 0, easing: expoOut }} on:click={modalData(card[0])}>
-                                <Card print={card[1][0]} totalPrints={card[1].length} i={i}></Card>
+                                <Card print={card[1][0]} totalPrints={card[1].length} delay={(i+1)*50}></Card>
                             </a>
                         {/each}
                     {/key}

@@ -4,7 +4,7 @@
 
     export let print;
     export let totalPrints;
-    export let i;
+    export let delay;
 </script>
 
 <div class="card" class:card--dual={print.layout=="transform" || print.layout=="reversible_card"}>
@@ -14,7 +14,7 @@
             {#await preload(print.image_uris.normal)}
                 <!--Loading-->
             {:then}
-                <img srcset="{print.image_uris.normal}, {print.image_uris.large} 2x" src="{print.image_uris.normal}" alt="{print.name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
+                <img srcset="{print.image_uris.normal}, {print.image_uris.large} 2x" src="{print.image_uris.normal}" alt="{print.name}" in:fade={{ delay: delay, duration: 200 }} />
             {/await}
         {:else}
             {#if print.card_faces}
@@ -23,10 +23,10 @@
                     <!--Loading-->
                 {:then}
                     <div class="face-front">
-                        <img srcset="{print.card_faces[0].image_uris.normal}, {print.card_faces[0].image_uris.large} 2x" src="{print.card_faces[0].image_uris.normal}" alt="{print.name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
+                        <img srcset="{print.card_faces[0].image_uris.normal}, {print.card_faces[0].image_uris.large} 2x" src="{print.card_faces[0].image_uris.normal}" alt="{print.name}" in:fade={{ delay: delay, duration: 200 }} />
                     </div>
                     <div class="face-back">
-                        <img srcset="{print.card_faces[1].image_uris.normal}, {print.card_faces[1].image_uris.large} 2x" src="{print.card_faces[1].image_uris.normal}" alt="{print.name}" in:fade|global={{ delay: (i+1)*50, duration: 200 }} />
+                        <img srcset="{print.card_faces[1].image_uris.normal}, {print.card_faces[1].image_uris.large} 2x" src="{print.card_faces[1].image_uris.normal}" alt="{print.name}" in:fade={{ delay: delay, duration: 200 }} />
                     </div>
                 {/await}
             {/if}
