@@ -61,12 +61,8 @@
     }
 
     dialog[open] {
-        animation: fade 400ms ease-out;
+        animation: fade 200ms ease-out;
     }
-
-	dialog[open]::backdrop {
-		animation: fade 200ms ease-out;
-	}
 
 	@keyframes fade {
 		from { opacity: 0; }

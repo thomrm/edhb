@@ -85,6 +85,7 @@
             .filter(x => x.type_line ? !x.type_line.includes("Token") : true)
             .filter(x => x.card_faces ? !x.card_faces[0].type_line.includes("Land") : true)
             .filter(x => x.lang.includes("en"))
+            .filter(x => !x.legalities.commander.includes("not_legal"))
             .filter(x => x.promo_types ? !x.promo_types.includes("stamped") && !x.promo_types.includes("prerelease") && !x.promo_types.includes("serialized") : true)
             .filter(x => !x.oversized)
             .filter(x => !x.set.includes("plst"))
