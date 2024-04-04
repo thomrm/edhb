@@ -1,6 +1,6 @@
 <script>
     import { onMount } from 'svelte';
-    import { fly, fade } from 'svelte/transition';
+    import { fly } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
@@ -43,7 +43,7 @@
             red: queryM && queryM.includes("r") ? true : false,
             green: queryM && queryM.includes("g") ? true : false,
             colorless: queryM && queryM.includes("c") ? true : false,
-            strict: queryS && queryS.includes(true) ? true : false
+            strict: queryS && queryS.includes(false) ? false : true
         },
         latestPrint: true,
         sortType: "release",
@@ -85,7 +85,7 @@
             .filter(x => x.type_line ? !x.type_line.includes("Token") : true)
             .filter(x => x.card_faces ? !x.card_faces[0].type_line.includes("Land") : true)
             .filter(x => x.lang.includes("en"))
-            .filter(x => !x.legalities.commander.includes("not_legal"))
+            //.filter(x => !x.legalities.commander.includes("not_legal"))
             .filter(x => x.promo_types ? !x.promo_types.includes("stamped") && !x.promo_types.includes("prerelease") && !x.promo_types.includes("serialized") : true)
             .filter(x => !x.oversized)
             .filter(x => !x.set.includes("plst"))
@@ -167,7 +167,7 @@
         totalPages = Math.ceil(filteredCards.length / filters.pageSize);
         totalCards = totalCards ? totalCards : filteredCards.length;
 
-        console.log(filteredCards);
+        //console.log(filteredCards);
 
         updateURLParams();
     }
@@ -188,7 +188,7 @@
         filters.color.red = false;
         filters.color.green = false;
         filters.color.colorless = false;
-        filters.color.strict = false;
+        filters.color.strict = true;
         filters.latestPrint = true;
         filters.sortType = "release";
         filters.sortAsc = false;
